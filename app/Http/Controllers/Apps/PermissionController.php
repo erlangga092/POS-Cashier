@@ -3,20 +3,40 @@
 namespace App\Http\Controllers\Apps;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\PermissionResource;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
+use Illuminate\Validation\Rule;
 use Spatie\Permission\Models\Permission;
 
 class PermissionController extends Controller
 {
     public function __invoke(Request $request)
     {
-        $permissions = Permission::query()->when(request()->q, function ($permissions) {
-            return $permissions->where('name', 'like', '%' . request()->q . '%');
-        })->latest()->paginate(10);
+        $request->validate([
+            'field' => Rule::in(['created_at', 'name']),
+            'direction' => Rule::in(['asc', 'desc'])
+        ]);
 
-        return Inertia::render('apps/permission/index', [
-            'permissions' => $permissions
+        $limit = $request->input('limit', 5);
+
+        $permissions = PermissionResource::collection(
+            Permission::query()
+                ->when(
+                    value: $request->search,
+                    callback: fn ($query, $value) => $query->where('name', 'ilike', '%' . $value . '%')
+                )
+                ->when(
+                    value: $request->field && $request->direction,
+                    callback: fn ($query) => $query->orderBy($request->field, $request->direction),
+                    default: fn ($query) => $query->latest()
+                )
+                ->paginate($limit)
+                ->withQueryString()
+        );
+
+        return inertia('apps/permission/index', [
+            'permissions' => fn () => $permissions,
+            'state' => $request->only('limit', 'page', 'search', 'field', 'direction')
         ]);
     }
 }

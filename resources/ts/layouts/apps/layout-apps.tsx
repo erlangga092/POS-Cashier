@@ -5,7 +5,7 @@ import React from "react";
 export function LayoutApps({ children }: { children: React.ReactNode }) {
   return (
     <div>
-      <div className="fixed l-0 t-0 border-b w-full py-2 bg-background">
+      <div className="fixed l-0 t-0 border-b w-full py-2 bg-background z-10">
         <Menu />
       </div>
       <div className="pt-12">

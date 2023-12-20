@@ -105,6 +105,12 @@
             "@/*": [
                 "./resources/ts/*"
             ],
+            "ziggy-vite": [
+                "./vendor/tightenco/ziggy/dist"
+            ],
+            "~/*": [
+                "./resources/js/*"
+            ],
         },
     },
     "include": [
